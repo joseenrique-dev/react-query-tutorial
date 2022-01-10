@@ -1,27 +1,33 @@
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from 'react-query';
 import { createNewPost } from "../api/posts";
 
 function NewPost() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
+  const {mutate,isLoading, error} = useMutation(createNewPost,{
+    onSuccess: ()=>{
+      queryClient.invalidateQueries(['posts']);//cache invalidation action, if cache is invalid then reactQuery refresh the posts list.
+    }
+  });
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    mutate({ title, body });
+    // setIsLoading(true);
+    // try {
+    //   await createNewPost({ title, body });
 
-    setIsLoading(true);
-    try {
-      await createNewPost({ title, body });
+    //   setTitle("");
+    //   setBody("");
+    // } catch (error) {
+    //   setError(error);
+    // }
 
-      setTitle("");
-      setBody("");
-    } catch (error) {
-      setError(error);
-    }
-
-    setIsLoading(false);
+    // setIsLoading(false);
   };
 
   return (
