@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from 'react-query';
 import { createNewPost } from "../api/posts";
+import { useMutatePost } from '../hooks/posts';
 
 function NewPost() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const queryClient = useQueryClient();
-  const {mutate,isLoading, error, isSuccess,reset} = useMutation(createNewPost,{
-    onSuccess: ()=>{
-      queryClient.invalidateQueries(['posts']);//cache invalidation action, if cache is invalid then reactQuery refresh the posts list.
-    }
-  });
+  const {mutate,isLoading, error, isSuccess,reset} = useMutatePost()
   // const [isLoading, setIsLoading] = useState(false);
   // const [error, setError] = useState(null);
 
