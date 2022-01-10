@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { createNewPost } from '../api/posts';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { createNewPost, getPosts } from '../api/posts';
 
 export function useMutatePost(){
     const queryClient = useQueryClient();
@@ -9,4 +9,16 @@ export function useMutatePost(){
         }
       });
       return {mutate,isLoading, error, isSuccess,reset}
+}
+
+export function usePosts(){
+    const qc =  useQueryClient()
+    //Queries
+    const {data: posts,error, isLoading, isFetching/*, isIdle, refetch*/} = useQuery(['posts'],getPosts,{
+      //refetchOnWindowFocus:false, //this property refresh the data example if we move for other tabs and return react-query refresh our data.
+      //staleTime: <time>|infinity// exist other properties to handle this kind of situation.
+      //enabled:false, //this property is for no load the data automatically
+   
+    });
+    return {data: posts,error, isLoading,qc, isFetching/*, isIdle, refetch*/};
 }
