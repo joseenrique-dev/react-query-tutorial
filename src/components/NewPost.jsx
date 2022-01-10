@@ -6,7 +6,7 @@ function NewPost() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const queryClient = useQueryClient();
-  const {mutate,isLoading, error} = useMutation(createNewPost,{
+  const {mutate,isLoading, error, isSuccess,reset} = useMutation(createNewPost,{
     onSuccess: ()=>{
       queryClient.invalidateQueries(['posts']);//cache invalidation action, if cache is invalid then reactQuery refresh the posts list.
     }
@@ -16,7 +16,14 @@ function NewPost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    mutate({ title, body });
+    mutate({ title, body },{
+      onSuccess:(post)=>{
+        queryClient.setQueriesData(['posts'],prevPost=>prevPost.concat(post))
+        queryClient.invalidateQueries(['posts']);
+        setTitle("");
+        setBody("");
+      }
+    });
     // setIsLoading(true);
     // try {
     //   await createNewPost({ title, body });
@@ -73,10 +80,13 @@ function NewPost() {
             Error creating the post: {error.message}
           </p>
         )}
-        {/* <div className="alert alert-success alert-dismissible" role="alert">
+        {
+          isSuccess &&
+        <div className="alert alert-success alert-dismissible" role="alert">
           The post was saved successfuly
-          <button type="button" className="btn-close"></button>
-        </div> */}
+          <button onClick={reset} type="button" className="btn-close"></button>
+        </div>
+        }
       </form>
     </section>
   );
