@@ -1,26 +1,48 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useQuery } from 'react-query';
+import { useInfiniteQuery, useQuery } from 'react-query';
 import { getGitHubData } from './services/GitHubServices';
 import './App.css';
 import { useEffect } from 'react';
 import { type } from '@testing-library/user-event/dist/type';
 
 export default function App() {
-  const { data, isLoading, error } = useQuery(['github-data'], getGitHubData);
+  // const { data, isLoading, error } = useQuery(
+  //   ['github-data'],
+  //   getGitHubData({ page })
+  // );
+
+  const { data, error, fetchNextPage, hasNextPage, isLoading } =
+    useInfiniteQuery(
+      ['github-data'],
+      (pageParam = 1) => getGitHubData(pageParam),
+      {
+        getNextPageParam: (lastPage, allPages) => {
+          debugger;
+          const maxPage = lastPage.total_count / 30; //86978 / 30 = 2899
+          const nextPage = allPages.length + 1; // siempre q nextPage este mas pequeño que pida el proximo
+          return nextPage <= maxPage ? nextPage : undefined;
+        },
+      }
+    );
 
   useEffect(() => {
-    const onScroll = (event) => {
+    let fetching = false;
+    const onScroll = async (event) => {
       const { scrollHeight, scrollTop, clientHeight } =
         event.target.scrollingElement;
-      if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-        console.log('Contact');
+      if (!fetching && scrollHeight - scrollTop <= clientHeight * 1.5) {
+        fetching = true;
+
+        hasNextPage && (await fetchNextPage());
+
+        fetching = false;
       }
     };
 
     document.addEventListener('scroll', onScroll);
     return () => document.removeEventListener('scroll', onScroll);
   });
-
+  console.log('Data-->', data);
   if (isLoading) {
     return (
       <div>
@@ -39,12 +61,14 @@ export default function App() {
     <main className='container'>
       <h1 className='mb-4'>GitHub data</h1>
 
-      {data.items.map((data) => (
-        <div key={data.id} className='github-box'>
-          <strong>{data.name}</strong>
-          <p>{data.description}</p>
-        </div>
-      ))}
+      {data.pages.map((page) =>
+        page.items.map((data) => (
+          <div key={data.id} className='github-box'>
+            <strong>{data.name}</strong>
+            <p>{data.description}</p>
+          </div>
+        ))
+      )}
     </main>
   );
 }
