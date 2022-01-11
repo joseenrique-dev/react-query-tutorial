@@ -1,14 +1,81 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useState } from "react";
-import NewPost from "./components/NewPost";
-import Post from "./components/Post";
-import Posts from "./components/Posts";
+import { useInfiniteQuery, useQuery } from 'react-query';
+import { getGitHubData } from './services/GitHubServices';
+import './App.css';
+import { useEffect } from 'react';
+import { type } from '@testing-library/user-event/dist/type';
 
 export default function App() {
-  const [postId, setPostId] = useState(-1);
+  // const { data, isLoading, error } = useQuery(
+  //   ['github-data'],
+  //   getGitHubData({ page })
+  // );
 
+  const { data, error, fetchNextPage, hasNextPage, isLoading } =
+    useInfiniteQuery(
+      ['github-data'],
+      (pageParam = 1) => getGitHubData(pageParam),
+      {
+        getNextPageParam: (lastPage, allPages) => {
+          debugger;
+          const maxPage = lastPage.total_count / 30; //86978 / 30 = 2899
+          const nextPage = allPages.length + 1; // siempre q nextPage este mas pequeño que pida el proximo
+          return nextPage <= maxPage ? nextPage : undefined;
+        },
+      }
+    );
+
+  useEffect(() => {
+    let fetching = false;
+    const onScroll = async (event) => {
+      const { scrollHeight, scrollTop, clientHeight } =
+        event.target.scrollingElement;
+      if (!fetching && scrollHeight - scrollTop <= clientHeight * 1.5) {
+        fetching = true;
+
+        hasNextPage && (await fetchNextPage());
+
+        fetching = false;
+      }
+    };
+
+    document.addEventListener('scroll', onScroll);
+    return () => document.removeEventListener('scroll', onScroll);
+  });
+  console.log('Data-->', data);
+  if (isLoading) {
+    return (
+      <div>
+        <span className='spinner-border'></span> Loading Posts...
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <section className='alert alert-danger'>
+        Error fetching posts: {error.message}
+      </section>
+    );
+  }
   return (
-    <main className="container">
+    <main className='container'>
+      <h1 className='mb-4'>GitHub data</h1>
+
+      {data.pages.map((page) =>
+        page.items.map((data) => (
+          <div key={data.id} className='github-box'>
+            <strong>{data.name}</strong>
+            <p>{data.description}</p>
+          </div>
+        ))
+      )}
+    </main>
+  );
+}
+
+// Testing Queries and Mutation
+{
+  /* <main className="container">
       <h1 className="mb-4">React-Query Demo</h1>
       {postId > -1 && (
         <div>
@@ -29,6 +96,5 @@ export default function App() {
           </div>
         </div>
       )}
-    </main>
-  );
+    </main> */
 }
