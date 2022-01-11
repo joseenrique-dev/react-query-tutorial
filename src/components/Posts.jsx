@@ -1,18 +1,8 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from 'react-query';
-import { getPosts } from "../api/posts";
+import { usePosts } from '../hooks/posts';
 
 export default function Posts({ setPostId }) {
  
-  const qc =  useQueryClient()
- //Queries
- const {data: posts,error, isLoading, isFetching/*, isIdle, refetch*/} = useQuery('posts',getPosts,{
-   //refetchOnWindowFocus:false, //this property refresh the data example if we move for other tabs and return react-query refresh our data.
-   //staleTime: <time>|infinity// exist other properties to handle this kind of situation.
-   //enabled:false, //this property is for no load the data automatically
-
- });
+  const {data: posts,error, isLoading,qc, isFetching} = usePosts()
 
   // if(isIdle) return <button onClick={refetch}>Fetch Posts</button>
   if (isLoading) {
