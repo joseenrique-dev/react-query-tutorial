@@ -1,50 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useInfiniteQuery, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 import { getGitHubData } from './services/GitHubServices';
 import './App.css';
-import { useEffect, useState } from 'react';
-import { type } from '@testing-library/user-event/dist/type';
+import { useState } from 'react';
 
 export default function App() {
   /**
    * INFORMATION:
-   * EXAMPLE INFINITE
-   */
-  // const { data, error, fetchNextPage, hasNextPage, isLoading } =
-  //   useInfiniteQuery(
-  //     ['github-data'],
-  //     (pageParam = 1) => getGitHubData(pageParam),
-  //     {
-  //       getNextPageParam: (lastPage, allPages) => {
-  //         debugger;
-  //         const maxPage = lastPage.total_count / 30; //86978 / 30 = 2899
-  //         const nextPage = allPages.length + 1; // siempre q nextPage este mas pequeño que pida el proximo
-  //         return nextPage <= maxPage ? nextPage : undefined;
-  //       },
-  //     }
-  //   );
-
-  // useEffect(() => {
-  //   let fetching = false;
-  //   const onScroll = async (event) => {
-  //     const { scrollHeight, scrollTop, clientHeight } =
-  //       event.target.scrollingElement;
-  //     if (!fetching && scrollHeight - scrollTop <= clientHeight * 1.5) {
-  //       fetching = true;
-
-  //       hasNextPage && (await fetchNextPage());
-
-  //       fetching = false;
-  //     }
-  //   };
-
-  //   document.addEventListener('scroll', onScroll);
-  //   return () => document.removeEventListener('scroll', onScroll);
-  // });
-
-  /**
-   * INFORMATION:
-   * EXAMPLE NORMAL PAGINATE
+   * EXAMPLE REGULAR PAGINATE
    */
   const [page, setPage] = useState(1);
 
@@ -55,8 +18,6 @@ export default function App() {
       keepPreviousData: true,
     }
   );
-  console.log('Data-->', data);
-  console.log('Page-->', page);
 
   if (isLoading) {
     return (
@@ -95,6 +56,9 @@ export default function App() {
   );
 }
 
+/**
+ * Ignore this DIRT :smirk:
+ */
 // Testing Queries and Mutation
 {
   /* <main className="container">
@@ -120,3 +84,39 @@ export default function App() {
       )}
     </main> */
 }
+
+/**
+ * INFORMATION:
+ * EXAMPLE INFINITE Pagination
+ */
+// const { data, error, fetchNextPage, hasNextPage, isLoading } =
+//   useInfiniteQuery(
+//     ['github-data'],
+//     (pageParam = 1) => getGitHubData(pageParam),
+//     {
+//       getNextPageParam: (lastPage, allPages) => {
+//         debugger;
+//         const maxPage = lastPage.total_count / 30; //86978 / 30 = 2899
+//         const nextPage = allPages.length + 1; // siempre q nextPage este mas pequeño que pida el proximo
+//         return nextPage <= maxPage ? nextPage : undefined;
+//       },
+//     }
+//   );
+
+// useEffect(() => {
+//   let fetching = false;
+//   const onScroll = async (event) => {
+//     const { scrollHeight, scrollTop, clientHeight } =
+//       event.target.scrollingElement;
+//     if (!fetching && scrollHeight - scrollTop <= clientHeight * 1.5) {
+//       fetching = true;
+
+//       hasNextPage && (await fetchNextPage());
+
+//       fetching = false;
+//     }
+//   };
+
+//   document.addEventListener('scroll', onScroll);
+//   return () => document.removeEventListener('scroll', onScroll);
+// });
